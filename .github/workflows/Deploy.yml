@@ -1,6 +1,7 @@
 name: Deploy folder to Pages
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main"] # 當 main 分支有更新時觸發
 
