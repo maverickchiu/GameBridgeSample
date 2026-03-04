@@ -1,0 +1,67 @@
+{
+  "version": 10,
+  "bundleInfos": [
+    {
+      "name": "bundle",
+      "version": "0308c",
+      "items": [
+        {
+          "relative": "cc.config.0308c.json",
+          "md5": "08c6cbb526d34c6f4b33ecd032b58e0a"
+        },
+        {
+          "relative": "import/02/02a311723.5024e.json",
+          "md5": "5024e081fdf3d051e7a0b40211d5c7d8"
+        },
+        {
+          "relative": "import/0b/0b2a10d41.f9dfa.json",
+          "md5": "f9dfaad9ec9e4e7bc91637074930b048"
+        },
+        {
+          "relative": "import/0e/0e1f05e55.c9796.json",
+          "md5": "c9796c9278368d654200cc89ba0f6646"
+        },
+        {
+          "relative": "import/20/20835ba4-6145-4fbc-a58a-051ce700aa3e.a2533.json",
+          "md5": "a253314ec7107d95345d7fc89b8d7bb5"
+        },
+        {
+          "relative": "import/47/47e54e32-b436-4a06-869e-cc0749576fb7.c16a8.json",
+          "md5": "c16a8f853c64bf39777846c27bfac37d"
+        },
+        {
+          "relative": "import/54/544e49d6-3f05-4fa8-9a9e-091f98fc2ce8.a2533.json",
+          "md5": "a253314ec7107d95345d7fc89b8d7bb5"
+        },
+        {
+          "relative": "import/95/951249e0-9f16-456d-8b85-a6ca954da16b.a2533.json",
+          "md5": "a253314ec7107d95345d7fc89b8d7bb5"
+        },
+        {
+          "relative": "index.0308c.js",
+          "md5": "d9e6aa5183ad01eab9e379e5476925de"
+        },
+        {
+          "relative": "native/12/1263d74c-8167-4928-91a6-4e2672411f47@a804a.89e45.bin",
+          "md5": "89e4542995ac32e6480bd9d7a706d1cb"
+        },
+        {
+          "relative": "native/20/20835ba4-6145-4fbc-a58a-051ce700aa3e.90cf4.png",
+          "md5": "90cf45d059d0408bec327f66eae5764c"
+        },
+        {
+          "relative": "native/47/47e54e32-b436-4a06-869e-cc0749576fb7.ebb35.jpg",
+          "md5": "ebb355b8f0ae8a83f92bc65306798381"
+        },
+        {
+          "relative": "native/54/544e49d6-3f05-4fa8-9a9e-091f98fc2ce8.83fcc.png",
+          "md5": "83fcc9912e01ae5411c357651fb8b1cf"
+        },
+        {
+          "relative": "native/95/951249e0-9f16-456d-8b85-a6ca954da16b.c06a9.png",
+          "md5": "c06a93f5f1a8a1c6edc4fd8b52e96cbf"
+        }
+      ]
+    }
+  ]
+}
