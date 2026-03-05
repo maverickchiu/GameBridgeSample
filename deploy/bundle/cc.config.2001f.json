@@ -1,0 +1,106 @@
+{
+    "importBase": "import",
+    "nativeBase": "native",
+    "name": "bundle",
+    "deps": [],
+    "uuids": [
+        "0b2a10d41",
+        "0c459c03e",
+        "0f1597b33",
+        "1263d74c-8167-4928-91a6-4e2672411f47@a804a",
+        "20835ba4-6145-4fbc-a58a-051ce700aa3e",
+        "20835ba4-6145-4fbc-a58a-051ce700aa3e@6c48a",
+        "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
+        "2c6e8d42-c995-4734-9f66-e1cd43c5cbe4",
+        "4339fbbe-bbba-441e-a5ef-9daf119601c5",
+        "4339fbbe-bbba-441e-a5ef-9daf119601c5@6c48a",
+        "4339fbbe-bbba-441e-a5ef-9daf119601c5@f9941",
+        "47e54e32-b436-4a06-869e-cc0749576fb7",
+        "47e54e32-b436-4a06-869e-cc0749576fb7@6c48a",
+        "47e54e32-b436-4a06-869e-cc0749576fb7@f9941",
+        "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8",
+        "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@6c48a",
+        "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@f9941",
+        "620b6bf3-0369-4560-837f-2a2c00b73c26",
+        "951249e0-9f16-456d-8b85-a6ca954da16b",
+        "951249e0-9f16-456d-8b85-a6ca954da16b@6c48a",
+        "951249e0-9f16-456d-8b85-a6ca954da16b@f9941",
+        "ae21216d-5f31-4348-9db0-2f32cb59c67b",
+        "c8f66d17-351a-48da-a12c-0212d28575c4"
+    ],
+    "paths": {
+        "ae21216d-5f31-4348-9db0-2f32cb59c67b": [
+            "entry",
+            "cc.Prefab",
+            1
+        ],
+        "2c6e8d42-c995-4734-9f66-e1cd43c5cbe4": [
+            "GameScene",
+            "cc.Prefab",
+            1
+        ]
+    },
+    "scenes": {},
+    "packs": {
+        "0f1597b33": [
+            "47e54e32-b436-4a06-869e-cc0749576fb7@6c48a",
+            "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@6c48a",
+            "4339fbbe-bbba-441e-a5ef-9daf119601c5@6c48a",
+            "20835ba4-6145-4fbc-a58a-051ce700aa3e@6c48a",
+            "951249e0-9f16-456d-8b85-a6ca954da16b@6c48a"
+        ],
+        "0b2a10d41": [
+            "1263d74c-8167-4928-91a6-4e2672411f47@a804a",
+            "2c6e8d42-c995-4734-9f66-e1cd43c5cbe4",
+            "620b6bf3-0369-4560-837f-2a2c00b73c26",
+            "c8f66d17-351a-48da-a12c-0212d28575c4"
+        ],
+        "0c459c03e": [
+            "20835ba4-6145-4fbc-a58a-051ce700aa3e@f9941",
+            "4339fbbe-bbba-441e-a5ef-9daf119601c5@f9941",
+            "47e54e32-b436-4a06-869e-cc0749576fb7@f9941",
+            "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@f9941",
+            "951249e0-9f16-456d-8b85-a6ca954da16b@f9941",
+            "ae21216d-5f31-4348-9db0-2f32cb59c67b"
+        ]
+    },
+    "versions": {
+        "import": [
+            "0b2a10d41",
+            "f9dfa",
+            "0c459c03e",
+            "ffb10",
+            "0f1597b33",
+            "41203",
+            "20835ba4-6145-4fbc-a58a-051ce700aa3e",
+            "a2533",
+            "4339fbbe-bbba-441e-a5ef-9daf119601c5",
+            "c16a8",
+            "47e54e32-b436-4a06-869e-cc0749576fb7",
+            "c16a8",
+            "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8",
+            "a2533",
+            "951249e0-9f16-456d-8b85-a6ca954da16b",
+            "a2533"
+        ],
+        "native": [
+            "1263d74c-8167-4928-91a6-4e2672411f47@a804a",
+            "89e45",
+            "20835ba4-6145-4fbc-a58a-051ce700aa3e",
+            "90cf4",
+            "4339fbbe-bbba-441e-a5ef-9daf119601c5",
+            "001d2",
+            "47e54e32-b436-4a06-869e-cc0749576fb7",
+            "ebb35",
+            "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8",
+            "83fcc",
+            "951249e0-9f16-456d-8b85-a6ca954da16b",
+            "c06a9"
+        ]
+    },
+    "redirect": [],
+    "debug": true,
+    "extensionMap": {},
+    "hasPreloadScript": true,
+    "dependencyRelationships": {}
+}
