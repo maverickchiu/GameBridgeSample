@@ -1,0 +1,3 @@
+[submodule "extensions/game-bridge"]
+	path = extensions/game-bridge
+	url = git@github.com:OLD-RD2/Creator_GameBridge.git
