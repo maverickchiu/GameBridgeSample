@@ -15,8 +15,8 @@ export class GameEntry extends GameEntryBase {
     protected onSetup(): void {
         this.joinGame({
             theme: 1,
-        }).then((gameId) => {
-            this.gameView.setup(gameId);
+        }).then((ssokey) => {
+            this.gameView.setup(ssokey);
 
             const gameScene = instantiate(this.gameScenePrefab);
             director.getScene().addChild(gameScene);
