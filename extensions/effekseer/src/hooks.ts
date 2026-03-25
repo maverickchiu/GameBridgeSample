@@ -1,114 +1,113 @@
 
 import fs from "fs"
 import path from "path"
-import { BuildHook, IBuildResult, IBuildTaskOption } from "../@types/packages/builder/@types";
+import { IBuildResult, IBuildTaskOption } from "../@types/packages/builder/@types";
 
 export async function load() { }
 
-// 取得路徑的公用函數
-const getPaths = () => {
-    const enginePath = path.join(path.dirname(Editor.App.path), "resources/3d/engine/native");
-    return {
-        enginePath,
-        cmake: path.join(enginePath, "CMakeLists.txt"),
-        cpp: path.join(enginePath, "cocos/bindings/manual/jsb_module_register.cpp"),
-        cmakeBak: path.join(enginePath, "CMakeLists.txt.bak"),
-        cppBak: path.join(enginePath, "cocos/bindings/manual/jsb_module_register.cpp.bak")
-    };
-};
+const patch_cpp = function (src: string, local: string, after: boolean, key: string, value: string) {
+    const begin_cpp = `\n//BEGIN ${key}`;
+    const end_cpp = `//END ${key}\n`;
 
-// 還原檔案的公用函數
-function restoreFiles() {
-    const paths = getPaths();
-    if (fs.existsSync(paths.cmakeBak)) {
-        fs.copyFileSync(paths.cmakeBak, paths.cmake);
-        fs.unlinkSync(paths.cmakeBak);
-        console.log("[Effekseer] CMakeLists.txt restored.");
+    const begin = src.indexOf(begin_cpp);
+    const end = src.indexOf(end_cpp);
+
+    // remove old part; handle malformed block without END marker too
+    if (begin >= 0 && end >= 0 && end > begin) {
+        src = src.substring(0, begin) + src.substring(end + end_cpp.length);
+    } else if (begin >= 0) {
+        const nextBegin = src.indexOf("\n//BEGIN ", begin + begin_cpp.length);
+        const cutEnd = nextBegin >= 0 ? nextBegin : src.length;
+        src = src.substring(0, begin) + src.substring(cutEnd);
     }
-    if (fs.existsSync(paths.cppBak)) {
-        fs.copyFileSync(paths.cppBak, paths.cpp);
-        fs.unlinkSync(paths.cppBak);
-        console.log("[Effekseer] jsb_module_register.cpp restored.");
+
+    let pos = src.indexOf(`${local}`);
+    if (after) {
+        pos += (`${local}`).length;
     }
+
+    let newsrc = src.substring(0, pos);
+    newsrc += begin_cpp;
+    newsrc += value;
+    newsrc += end_cpp;
+    newsrc += src.substring(pos);
+
+    return newsrc;
 }
 
-// 通用的 Patch 邏輯 (包含清理與防呆)
-const patch_content = function (src: string, local: string | null, after: boolean, key: string, value: string, isCpp: boolean) {
-    const prefix_tag = isCpp ? "//" : "#";
-    const begin_marker = `${prefix_tag}BEGIN ${key}`;
-    const end_marker = `${prefix_tag}END ${key}`;
+const patch_cmake = function (src: string, local: string | null, after: boolean, key: string, value: string) {
+    const begin_marker = `#BEGIN ${key}`;
+    const end_marker = `#END ${key}`;
 
-    const beginIndex = src.indexOf(begin_marker);
-    const endIndex = src.indexOf(end_marker);
+    // 1. 溫和清理：只移除標記區塊，但前後保留換行確保結構不崩壞
+    // 使用 [\\s]* 來吸收標記前後可能殘留的空白
+    const cleanup_regex = new RegExp(`\\n?[\\s]*${begin_marker}[\\s\\S]*?${end_marker}[\\s]*`, 'g');
+    src = src.replace(cleanup_regex, "\n");
 
-    // 準備好要插入的新區塊
-    const block = `\n\n${begin_marker}\n${value.trim()}\n${end_marker}\n`;
-
-    // 1. 標記完整且順序正確 -> 直接原地替換
-    if (beginIndex >= 0 && endIndex >= 0 && endIndex > beginIndex) {
-        const prefix = src.substring(0, beginIndex);
-        const suffix = src.substring(endIndex + end_marker.length);
-        return (prefix + block + suffix).replace(/\n{3,}/g, "\n\n");
-    }
-
-    // 2. 標記殘缺或順序錯誤 -> 拋出例外
-    // (只要其中一個存在，或是結尾比開頭先出現)
-    if (beginIndex >= 0 || endIndex >= 0 || (beginIndex >= 0 && beginIndex > endIndex)) {
-        throw new Error(`[Patch Error] 檔案中的 ${key} 標記殘缺或順序錯誤，請手動還原檔案或清除舊標記。`);
-    }
-
-    // 3. 完全沒有舊標記 -> 根據 local 尋找插入點
+    // 2. 決定插入位置
     let pos = src.length;
     if (local) {
+        // 去除 local 可能帶有的首尾空白再找，增加匹配成功率
         const foundPos = src.indexOf(local);
         if (foundPos !== -1) {
             pos = after ? foundPos + local.length : foundPos;
         } else {
-            console.warn(`[Patch Warning] 找不到定位字串: ${local}，將插入至檔案末尾。`);
+            // 如果找不到定位點，回退到文件末尾（安全做法）
+            pos = src.length;
         }
     }
 
-    // 組合並回傳
+    // 3. 分割並組合
     const prefix = src.substring(0, pos);
     const suffix = src.substring(pos);
 
-    return (prefix + block + suffix).replace(/\n{3,}/g, "\n\n");
-};
+    // 組合時強加換行，並對內容進行 trim 處理，防止多重換行堆疊
+    const block = `\n\n${begin_marker}\n${value.trim()}\n${end_marker}`;
+
+    return (prefix + block + suffix).replace(/\n{3,}/g, "\n\n").trim() + '\n';
+}
 
 export async function onBeforeBuild(options: IBuildTaskOption, result: IBuildResult) {
-    const paths = getPaths();
-
-    // 1. 備份
-    if (!fs.existsSync(paths.cmakeBak)) fs.copyFileSync(paths.cmake, paths.cmakeBak);
-    if (!fs.existsSync(paths.cppBak)) fs.copyFileSync(paths.cpp, paths.cppBak);
-
-    // 2. 同步複製 Effekseer 核心檔案 (避免非同步流競爭)
     const from = path.join(Editor.Project.path, "extensions/effekseer/engine/native");
-    const recursiveCopy = (s: string, d: string) => {
-        if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
-        fs.readdirSync(s).forEach(file => {
-            const srcFile = path.join(s, file);
-            const dstFile = path.join(d, file);
-            if (fs.statSync(srcFile).isDirectory()) recursiveCopy(srcFile, dstFile);
-            else fs.copyFileSync(srcFile, dstFile);
-        });
-    };
-    recursiveCopy(from, paths.enginePath);
+    const to = path.join(path.dirname(Editor.App.path), "resources/3d/engine/native");
 
-    let cmakeBody = fs.readFileSync(paths.cmake, "utf-8");
+    var copy_files = function (src: string, dst: string) {
+        let names = fs.readdirSync(src);
+        names.forEach(function (name: string) {
+            var name_src = path.join(src, name);
+            var name_dst = path.join(dst, name);
+            var stat = fs.statSync(name_src);
+            if (stat.isFile()) {
+                let readable = fs.createReadStream(name_src);
+                let writable = fs.createWriteStream(name_dst);
+                readable.pipe(writable);
+            } else if (stat.isDirectory()) {
+                try {
+                    fs.accessSync(name_dst, fs.constants.F_OK);
+                } catch (error) {
+                    fs.mkdirSync(name_dst);
+                }
+                copy_files(name_src, name_dst);
+            }
+        });
+    }
+    copy_files(from, to);
+
+    const cmakeFile = path.join(path.dirname(Editor.App.path), "resources/3d/engine/native/CMakeLists.txt");
+    let cmakeBody: string = fs.readFileSync(cmakeFile).toString();
 
     // After engine's cc_set_if_undefined(USE_EFFEKSEER OFF), force native Effekseer ON so
     // -I effekseer and CC_USE_EFFEKSEER=1 match project that uses this extension (avoids efk_render.h not found).
-    cmakeBody = patch_content(cmakeBody, 'cc_set_if_undefined(USE_GAMEPAD              ON)', false, 'EFFEKSEER_FORCE_ON', `
+    cmakeBody = patch_cmake(cmakeBody, 'cc_set_if_undefined(USE_GAMEPAD              ON)', false, 'EFFEKSEER_FORCE_ON', `
 cc_set_if_undefined(USE_EFFEKSEER            ON)
-`, false);
+`);
 
-    cmakeBody = patch_content(cmakeBody, '$<IF:$<BOOL:${USE_GAMEPAD}>,CC_USE_GAMEPAD=1,CC_USE_GAMEPAD=0>', false, 'IF_CC_USE_EFFEKSEER',
-        '\n$<IF:$<BOOL:${USE_EFFEKSEER}>,CC_USE_EFFEKSEER=1,CC_USE_EFFEKSEER=0>\n'
-        , false);
+    cmakeBody = patch_cmake(cmakeBody, '$<IF:$<BOOL:${USE_GAMEPAD}>,CC_USE_GAMEPAD=1,CC_USE_GAMEPAD=0>', false, 'IF_CC_USE_EFFEKSEER',
+        '\n$<IF:$<BOOL:${USE_EFFEKSEER}>,CC_USE_EFFEKSEER=1,CC_USE_EFFEKSEER=0>\n\n'
+    );
 
 
-    cmakeBody = patch_content(cmakeBody, '### generate source files', false, 'EFFEKSEER_PART_0', `
+    cmakeBody = patch_cmake(cmakeBody, '### generate source files', false, 'EFFEKSEER_PART_0', `
 if(USE_EFFEKSEER)
 cocos_source_files(
     effekseer/Effekseer/Effekseer/Effekseer.Color.cpp
@@ -203,9 +202,9 @@ cocos_source_files(
     cocos/bindings/manual/jsb_effekseer_manual.h
 )
 endif()
-`, false);
+`);
 
-    cmakeBody = patch_content(cmakeBody, null, false, 'EFFEKSEER_PART_1', `
+    cmakeBody = patch_cmake(cmakeBody, null, false, 'EFFEKSEER_PART_1', `
 if(USE_EFFEKSEER)
 target_include_directories(\${ENGINE_NAME} PRIVATE 
     \${CWD}/effekseer
@@ -219,9 +218,9 @@ target_compile_definitions(\${ENGINE_NAME} PRIVATE
     __EFFEKSEER_USE_LIBPNG__
 )
 endif()
-`, false);
+`);
 
-    cmakeBody = patch_content(cmakeBody, "add_library(ccgeometry ${ccgeometry_SOURCE_LIST})", true, 'EFFEKSEER_PART_1B', `
+    cmakeBody = patch_cmake(cmakeBody, "add_library(ccgeometry ${ccgeometry_SOURCE_LIST})", true, 'EFFEKSEER_PART_4', `
 if(USE_EFFEKSEER)
 target_include_directories(ccbindings PRIVATE
     \${CWD}/effekseer
@@ -230,31 +229,24 @@ target_include_directories(ccbindings PRIVATE
     \${CWD}/effekseer/EffekseerRendererCommon
 )
 endif()
-`, false);
+`);
 
-    fs.writeFileSync(paths.cmake, cmakeBody);
+    fs.writeFileSync(cmakeFile, cmakeBody);
 
-    let cppBody = fs.readFileSync(paths.cpp, "utf-8");
+    const cppFile = path.join(path.dirname(Editor.App.path), "resources/3d/engine/native/cocos/bindings/manual/jsb_module_register.cpp");
+    let cppBody: string = fs.readFileSync(cppFile).toString();
 
-    cppBody = patch_content(cppBody, '#include "cocos/bindings/manual/jsb_xmlhttprequest.h"', true, 'EFFEKSEER_PART_2', `
+    cppBody = patch_cpp(cppBody, '#include "cocos/bindings/manual/jsb_xmlhttprequest.h"', true, 'EFFEKSEER_PART_2', `
 #include "cocos/bindings/manual/jsb_effekseer_manual.h"
-`, true);
+`);
 
-    cppBody = patch_content(cppBody, 'se->addRegisterCallback(register_all_native2d);', true, 'EFFEKSEER_PART_3', `
+    cppBody = patch_cpp(cppBody, 'se->addRegisterCallback(register_all_native2d);', true, 'EFFEKSEER_PART_3', `
     se->addRegisterCallback(register_all_effekseer);
-`, true);
+`);
 
-    fs.writeFileSync(paths.cpp, cppBody);
-}
-
-export const onError: BuildHook.onError = async function (options, result) {
-    restoreFiles();
-};
-
-export async function onAfterBuild(options: IBuildTaskOption, result: IBuildResult) {
-    restoreFiles();
+    fs.writeFileSync(cppFile, cppBody);
 }
 
 export function unload() {
-    restoreFiles();
+    // console.warn(`[${PACKAGE_NAME}] Unload cocos plugin example in builder.`);
 }
