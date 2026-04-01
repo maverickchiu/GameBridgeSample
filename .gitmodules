@@ -1,3 +1,6 @@
 [submodule "extensions/Creator_GameBridge"]
 	path = extensions/Creator_GameBridge
 	url = git@github.com:OLD-RD2/Creator_GameBridge.git
+[submodule "extensions/Creator_PatchVersionBuilder"]
+	path = extensions/Creator_PatchVersionBuilder
+	url = git@github.com:OLD-RD2/Creator_PatchVersionBuilder.git
